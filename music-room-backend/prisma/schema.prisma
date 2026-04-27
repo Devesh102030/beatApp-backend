@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoomStatus {
+  idle
+  waiting_for_host
+  live
+  ended
+}
+
+enum RoomRole {
+  host
+  listener
+  moderator
+}
+
+model User {
+  id          String   @id @default(uuid())
+  displayName String
+  email       String?  @unique
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  hostedRooms   Room[]         @relation("HostedRooms")
+  roomMembers   RoomMember[]
+  roomSessions  RoomSession[]
+  chatMessages  ChatMessage[]
+
+  @@map("users")
+}
+
+model Room {
+  id             String     @id @default(uuid())
+  code           String     @unique
+  name           String
+  hostUserId     String?
+  hostSecretHash String
+  status         RoomStatus @default(idle)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  endedAt        DateTime?
+
+  // Relations
+  host         User?          @relation("HostedRooms", fields: [hostUserId], references: [id], onDelete: SetNull)
+  members      RoomMember[]
+  sessions     RoomSession[]
+  chatMessages ChatMessage[]
+
+  @@index([code])
+  @@index([status])
+  @@map("rooms")
+}
+
+model RoomMember {
+  id       String    @id @default(uuid())
+  roomId   String
+  userId   String
+  role     RoomRole
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+
+  // Relations
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId, leftAt])
+  @@index([roomId, leftAt])
+  @@map("room_members")
+}
+
+model RoomSession {
+  id             String    @id @default(uuid())
+  roomId         String
+  hostUserId     String?
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+  sourceTabTitle String?
+  sourceDomain   String?
+
+  // Relations
+  room Room  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  host User? @relation(fields: [hostUserId], references: [id], onDelete: SetNull)
+
+  @@index([roomId, endedAt])
+  @@map("room_sessions")
+}
+
+model ChatMessage {
+  id          String   @id @default(uuid())
+  roomId      String
+  userId      String
+  displayName String
+  message     String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt])
+  @@map("chat_messages")
+}

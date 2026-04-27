@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Music Room Broadcaster",
+  "version": "0.1.0",
+  "description": "Capture and broadcast tab audio to your Music Room listeners.",
+  "icons": {
+    "16":  "icons/icon16.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Music Room Broadcaster"
+  },
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "permissions": [
+    "tabCapture",
+    "activeTab",
+    "offscreen",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "ws://localhost:3000/*",
+    "wss://*/*"
+  ]
+}
