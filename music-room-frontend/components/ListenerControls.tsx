@@ -37,6 +37,7 @@ export function ListenerControls({
 
   const config = STATE_CONFIG[connectionState]
   const isConnected = connectionState !== 'disconnected' && connectionState !== 'error'
+  const isConnecting = connectionState === 'connecting'
   const isRoomEnded = roomStatus === 'ended'
 
   return (
@@ -94,12 +95,12 @@ export function ListenerControls({
           {!isConnected ? (
             <button
               onClick={onConnect}
-              disabled={connectionState === 'connecting'}
+              disabled={isConnecting}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-accent
                 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed
                 text-white font-medium rounded-lg transition-colors text-sm"
             >
-              {connectionState === 'connecting' ? (
+              {isConnecting ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Connecting...
